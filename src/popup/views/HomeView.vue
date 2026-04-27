@@ -3,12 +3,15 @@
     <Toast />
 
     <div class="fpc-surface rounded-lg p-4">
-      <div class="flex items-start justify-between gap-2">
-        <div>
-          <h2 class="text-base font-semibold fpc-title">FHIR Collector</h2>
-          <p class="text-sm fpc-subtle mt-1">
-            Logged in as <span class="font-medium">{{ username }}</span>
-          </p>
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <img :src="brandIconUrl" alt="FHIR Collector icon" class="h-10 w-10 rounded-sm mt-0.5" />
+          <div>
+            <h2 class="text-base font-semibold fpc-title">FHIR Collector</h2>
+            <p class="text-sm fpc-subtle mt-1">
+              Logged in as <span class="font-medium">{{ username }}</span>
+            </p>
+          </div>
         </div>
         <div v-if="uiScreen === 'main'" class="flex items-center gap-1">
           <!-- <Button
@@ -178,6 +181,7 @@ const settings = ref({
   requestTimeoutMs: 15000
 })
 const settingsDraft = ref({ ...settings.value })
+const brandIconUrl = chrome.runtime.getURL('icons/icon32.png')
 
 const isParsedPhase = computed(() =>
   ['parsed', 'parsed-partial', 'fhir-invalid', 'sent', 'send-error'].includes(phase.value)
