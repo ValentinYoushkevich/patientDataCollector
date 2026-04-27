@@ -19,6 +19,9 @@ export function parseSystemC(doc) {
     _parsedAt: new Date().toISOString()
   }
 
+  const optional = ['phone', 'email', 'addressLine', 'city', 'state', 'postalCode', 'language']
+  raw._missingFields = optional.filter((k) => !raw[k])
+
   const required = ['mrn', 'family', 'birthDate']
   const missingRequired = required.filter((key) => !raw[key])
   if (missingRequired.length > 0) {
