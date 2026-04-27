@@ -13,8 +13,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'SEND_BUNDLE') {
     ;(async () => {
       try {
-        const { bundle, endpoint, token } = message.payload ?? {}
-        const result = await sendBundle(bundle, endpoint, token)
+        const { bundle, endpoint, token, timeoutMs } = message.payload ?? {}
+        const result = await sendBundle(bundle, endpoint, token, timeoutMs)
         sendResponse({ ok: true, result })
       } catch (err) {
         sendResponse({ ok: false, error: err?.message ?? 'Send failed' })

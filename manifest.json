@@ -15,7 +15,9 @@
       "matches": [
         "http://localhost/*",
         "https://mock-compliance.example.com/*",
-        "https://*.systemA.com/*"
+        "https://*.systemA.com/*",
+        "https://*.systemB.com/*",
+        "https://*.systemC.com/*"
       ],
       "js": [
         "src/content/index.js"
@@ -32,6 +34,9 @@
   "host_permissions": [
     "http://localhost/*",
     "https://mock-compliance.example.com/*",
+    "https://*.systemA.com/*",
+    "https://*.systemB.com/*",
+    "https://*.systemC.com/*",
     "https://fhir-endpoint.example.com/*"
   ]
 }
