@@ -1,0 +1,27 @@
+{
+  "name": "fhir-patient-collector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome Extension (Manifest V3) for collecting and sending patient data as FHIR R4.",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@primevue/themes": "^4.5.4",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5",
+    "vue": "^3.5.33"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^4.2.4",
+    "vite": "^8.0.10",
+    "vite-plugin-web-extension": "^4.5.1"
+  }
+}
