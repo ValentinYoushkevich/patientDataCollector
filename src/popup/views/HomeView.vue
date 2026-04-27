@@ -3,82 +3,131 @@
     <Toast />
 
     <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 class="text-base font-semibold text-slate-800">FHIR Collector</h2>
-      <p class="text-sm text-slate-600 mt-1">
-        Вы вошли как <span class="font-medium">{{ username }}</span>
-      </p>
-    </div>
-
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <SelectSystem />
-      <p class="text-xs text-slate-500 mt-2">
-        {{ detectedSystem ? `Auto-detect: ${detectedSystem}` : 'Auto-detect не сработал, используется выбор вручную.' }}
-      </p>
-    </div>
-
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <h3 class="text-sm font-semibold text-slate-800 mb-2">Настройки отправки</h3>
-      <div class="flex flex-col gap-2">
-        <InputText v-model="settings.fhirEndpoint" placeholder="FHIR endpoint URL" />
-        <InputText v-model="settings.authToken" placeholder="Bearer token (optional)" />
-        <InputNumber
-          v-model="settings.requestTimeoutMs"
-          inputId="timeout-ms"
-          :min="1000"
-          :max="120000"
-          :step="1000"
-          suffix=" ms"
-          fluid
-        />
-      </div>
-      <div class="flex gap-2 mt-3">
-        <Button label="Сохранить настройки" icon="pi pi-save" size="small" @click="saveSettingsClick" />
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <h2 class="text-base font-semibold text-slate-800">FHIR Collector</h2>
+          <p class="text-sm text-slate-600 mt-1">
+            Вы вошли как <span class="font-medium">{{ username }}</span>
+          </p>
+        </div>
+        <div v-if="uiScreen === 'main'" class="flex items-center gap-1">
+          <Button
+            v-tooltip.top="'Settings'"
+            icon="pi pi-cog"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Открыть настройки"
+            @click="openSettings"
+          />
+          <Button
+            v-tooltip.top="'Logout'"
+            icon="pi pi-sign-out"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Выйти"
+            @click="$emit('logout')"
+          />
+        </div>
       </div>
     </div>
 
-    <div v-if="phase === 'idle'" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <Button label="Спарсить данные" icon="pi pi-download" class="w-full" @click="doParse" />
-    </div>
-
-    <div
-      v-if="phase === 'parsing' || phase === 'sending'"
-      class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-    >
-      <div class="flex items-center gap-2 text-slate-700">
-        <i class="pi pi-spin pi-spinner" />
-        <span>{{ phase === 'parsing' ? 'Считываю данные со страницы...' : 'Отправляю на FHIR endpoint...' }}</span>
+    <template v-if="uiScreen === 'main'">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <SelectSystem />
+        <p v-if="AUTO_DETECT_SYSTEM" class="text-xs text-slate-500 mt-2">
+          {{ detectedSystem ? `Auto-detect: ${detectedSystem}` : 'Auto-detect не сработал, используется выбор вручную.' }}
+        </p>
       </div>
-    </div>
 
-    <Message v-if="phase === 'parse-error'" severity="error">
-      {{ parseError }}
-    </Message>
-
-    <div v-if="isParsedPhase" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <PatientCard :data="parsedData" :fhirErrors="fhirErrors" />
-      <div class="flex gap-2 mt-3">
-        <Button
-          label="Отправить на FHIR endpoint"
-          icon="pi pi-send"
-          :disabled="phase === 'fhir-invalid'"
-          @click="doSend"
-        />
-        <Button
-          label="Спарсить снова"
-          icon="pi pi-refresh"
-          severity="secondary"
-          @click="doParse"
-        />
+      <div v-if="phase === 'idle'" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <Button label="Спарсить данные" icon="pi pi-download" class="w-full" @click="doParse" />
       </div>
-    </div>
 
-    <Message v-if="phase === 'send-error'" severity="error">
-      {{ sendError }}
-    </Message>
+      <div
+        v-if="phase === 'parsing' || phase === 'sending'"
+        class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      >
+        <div class="flex items-center gap-2 text-slate-700">
+          <i class="pi pi-spin pi-spinner" />
+          <span>{{ phase === 'parsing' ? 'Считываю данные со страницы...' : 'Отправляю на FHIR endpoint...' }}</span>
+        </div>
+      </div>
 
-    <LogView :logs="sendLogs" @clear="clearLogsClick" />
+      <Message v-if="phase === 'parse-error'" severity="error">
+        {{ parseError }}
+      </Message>
 
-    <Button label="Выйти" icon="pi pi-sign-out" severity="secondary" @click="$emit('logout')" />
+      <div v-if="isParsedPhase" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <PatientCard :data="parsedData" :fhirErrors="fhirErrors" />
+        <div class="flex flex-col gap-2 mt-3">
+          <Button
+            label="Отправить на FHIR endpoint"
+            icon="pi pi-send"
+            :disabled="phase === 'fhir-invalid'"
+            class="w-full"
+            @click="doSend"
+          />
+          <Button
+            label="Спарсить снова"
+            icon="pi pi-refresh"
+            severity="secondary"
+            class="w-full"
+            @click="doParse"
+          />
+        </div>
+      </div>
+
+      <Message v-if="phase === 'send-error'" severity="error">
+        {{ sendError }}
+      </Message>
+
+      <div v-if="false">
+        <LogView :logs="sendLogs" @clear="clearLogsClick" />
+      </div>
+    </template>
+
+    <template v-else>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+          <Button
+            icon="pi pi-arrow-left"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Назад"
+            @click="closeSettingsWithoutSave"
+          />
+          <h3 class="text-sm font-semibold text-slate-800">Настройки отправки</h3>
+        </div>
+        <div class="flex flex-col gap-2">
+          <InputText v-model="settingsDraft.fhirEndpoint" placeholder="FHIR endpoint URL" />
+          <InputText v-model="settingsDraft.authToken" placeholder="Bearer token (optional)" />
+          <InputNumber
+            v-model="settingsDraft.requestTimeoutMs"
+            inputId="timeout-ms"
+            :min="1000"
+            :max="120000"
+            :step="1000"
+            suffix=" ms"
+            fluid
+          />
+        </div>
+        <div class="flex gap-2 mt-3">
+          <Button label="Сохранить настройки" icon="pi pi-save" size="small" @click="saveSettingsClick" />
+          <Button label="Назад" icon="pi pi-arrow-left" severity="secondary" size="small" @click="closeSettingsWithoutSave" />
+        </div>
+      </div>
+    </template>
+
+    <Button
+      v-if="uiScreen !== 'main'"
+      label="Выйти"
+      icon="pi pi-sign-out"
+      severity="secondary"
+      @click="$emit('logout')"
+    />
   </div>
 </template>
 
@@ -101,6 +150,8 @@ import PatientCard from '../components/PatientCard.vue'
 import SelectSystem from '../components/SelectSystem.vue'
 import LogView from './LogView.vue'
 
+const AUTO_DETECT_SYSTEM = false
+
 defineProps({
   username: {
     type: String,
@@ -120,11 +171,13 @@ const sendError = ref('')
 const fhirErrors = ref([])
 const detectedSystem = ref('')
 const sendLogs = ref([])
+const uiScreen = ref('main')
 const settings = ref({
   fhirEndpoint: 'https://hapi.fhir.org/baseR4',
   authToken: '',
   requestTimeoutMs: 15000
 })
+const settingsDraft = ref({ ...settings.value })
 
 const isParsedPhase = computed(() =>
   ['parsed', 'parsed-partial', 'fhir-invalid', 'sent', 'send-error'].includes(phase.value)
@@ -136,10 +189,32 @@ async function collectFromTab(systemId) {
     throw new Error('Активная вкладка не найдена')
   }
 
-  const response = await chrome.tabs.sendMessage(tab.id, {
+  const payload = {
     type: 'COLLECT_DATA',
     payload: { systemId }
-  })
+  }
+
+  let response
+  try {
+    response = await chrome.tabs.sendMessage(tab.id, payload)
+  } catch (error) {
+    const rawMessage = String(error?.message || '')
+    if (rawMessage.includes('Receiving end does not exist')) {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['src/content/index.js']
+        })
+        response = await chrome.tabs.sendMessage(tab.id, payload)
+      } catch {
+        throw new Error(
+          'Не удалось подключить content script. Откройте поддерживаемую страницу (localhost / systemA/systemB/systemC) и обновите вкладку.'
+        )
+      }
+    } else {
+      throw error
+    }
+  }
 
   if (!response?.ok) {
     throw new Error(response?.error ?? 'Не удалось получить данные')
@@ -149,6 +224,12 @@ async function collectFromTab(systemId) {
 }
 
 async function detectAndStoreSystem() {
+  if (!AUTO_DETECT_SYSTEM) {
+    detectedSystem.value = ''
+    const { systemId } = await chrome.storage.local.get('systemId')
+    return systemId || 'systemA'
+  }
+
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   const autoSystem = detectSystem(tab?.url)
   detectedSystem.value = autoSystem || ''
@@ -228,7 +309,9 @@ async function doSend() {
 }
 
 async function saveSettingsClick() {
-  settings.value = await saveSettings(settings.value)
+  settings.value = await saveSettings(settingsDraft.value)
+  settingsDraft.value = { ...settings.value }
+  uiScreen.value = 'main'
   toast.add({
     severity: 'success',
     summary: 'Сохранено',
@@ -242,8 +325,19 @@ async function clearLogsClick() {
   sendLogs.value = []
 }
 
+function openSettings() {
+  settingsDraft.value = { ...settings.value }
+  uiScreen.value = 'settings'
+}
+
+function closeSettingsWithoutSave() {
+  settingsDraft.value = { ...settings.value }
+  uiScreen.value = 'main'
+}
+
 onMounted(async () => {
   settings.value = await getSettings()
+  settingsDraft.value = { ...settings.value }
   sendLogs.value = await getSendLogs()
   await detectAndStoreSystem()
 })
