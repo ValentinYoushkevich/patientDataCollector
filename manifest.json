@@ -13,7 +13,9 @@
   "content_scripts": [
     {
       "matches": [
-        "http://localhost/*"
+        "http://localhost/*",
+        "https://mock-compliance.example.com/*",
+        "https://*.systemA.com/*"
       ],
       "js": [
         "src/content/index.js"
@@ -28,6 +30,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://localhost/*"
+    "http://localhost/*",
+    "https://mock-compliance.example.com/*",
+    "https://fhir-endpoint.example.com/*"
   ]
 }

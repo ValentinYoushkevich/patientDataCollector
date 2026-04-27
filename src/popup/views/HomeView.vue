@@ -8,8 +8,9 @@
     </div>
 
     <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p class="text-sm text-slate-700">
-        Stage-01 завершен: popup, авторизация-заглушка и базовый экран готовы.
+      <SelectSystem />
+      <p class="text-xs text-slate-500 mt-2">
+        Выбор сохраняется в chrome.storage.local (`systemId`).
       </p>
     </div>
 
@@ -24,6 +25,7 @@
 
 <script setup>
 import Button from 'primevue/button';
+import SelectSystem from '../components/SelectSystem.vue';
 
 defineProps({
   username: {
