@@ -1,1 +1,90 @@
-# patientDataCollector
+# FHIR Patient Data Collector
+
+Chrome Extension (Manifest V3) для сбора данных пациента со страниц compliance-систем, преобразования в FHIR R4 и отправки на FHIR endpoint.
+
+## Что делает расширение
+
+- Авторизует пользовател.
+- Считывает данные пациента с открытой страницы поддерживаемой системы.
+- Преобразует raw-данные в `FHIR Patient`.
+- Формирует `FHIR Bundle` (`transaction`) и отправляет на настроенный endpoint.
+- Показывает двухфазный UX: `Parse -> Review -> Send`.
+
+## Технологический стек
+
+- `Vue 3` (Composition API) — UI popup.
+- `PrimeVue 4` + `@primevue/themes` (Aura/Lara) — компоненты интерфейса.
+- `Tailwind CSS v3` — layout и утилитарная стилизация.
+- `Vite` + `vite-plugin-web-extension` — сборка расширения.
+- `chrome.storage.local` — локальное хранение настроек/состояния.
+- `fetch` + background service worker — отправка данных на endpoint.
+- `fhir-tool` — валидация FHIR ресурсов перед отправкой.
+
+## Быстрый старт
+
+### 1) Установка зависимостей
+
+```bash
+npm install
+```
+
+### 2) Режим разработки
+
+```bash
+npm run dev
+```
+
+### 3) Подключение расширения в Chrome
+
+1. Откройте `chrome://extensions`.
+2. Включите `Developer mode`.
+3. Нажмите `Load unpacked`.
+4. Выберите папку `dist`.
+
+## Запуск mock-site
+
+```bash
+npx serve mock-site -p 3001
+```
+
+Примеры сценариев:
+
+- `http://localhost:3001/patient-full.html` — полный валидный набор полей.
+- `http://localhost:3001/patient-partial.html` — частичные данные.
+- `http://localhost:3001/patient-invalid.html` — данные, не проходящие FHIR-валидацию.
+
+## Пример логина (stub)
+
+- Логин: `demo`
+- Пароль: `demo123`
+
+> Stub-авторизация используется только для прототипа.
+
+## FHIR endpoint для тестов
+
+- [https://hapi.fhir.org/baseR4](https://hapi.fhir.org/baseR4)
+- [https://r4.smarthealthit.org](https://r4.smarthealthit.org)
+
+Рекомендуется отправлять только тестовые/анонимизированные данные.
+
+## Добавление новой системы
+
+1. Создать парсер `src/parsers/systemD.js` (`parseSystemD(doc)`).
+2. Зарегистрировать его в `src/parsers/index.js`.
+3. Добавить опцию в `SelectSystem.vue`.
+4. Добавить URL-паттерн в `detectSystem(url)` (для auto-detect).
+
+Важно: новый парсер должен возвращать тот же контракт полей, что и `systemA`, чтобы `mapper.js` работал без дополнительных изменений.
+
+## Известные ограничения прототипа
+
+- Реальный OAuth отсутствует (используется заглушка).
+- Токен endpoint хранится статично.
+- Парсинг ориентирован на `data-field` селекторы.
+- Требуется доработка для SPA-навигации (MutationObserver и т.д.).
+- Нет отдельного security-hardening слоя для хранения чувствительных данных.
+
+## Документация в репозитории
+
+- Основной документ: `documentation/FHIR_ChromeExtension_Documentation.docx`
+- Планы этапов: `Documentation Plans/`
