@@ -1,7 +1,7 @@
 function normalizeGender(val) {
   const v = (val || '').toLowerCase()
-  if (['male', 'man', 'm', 'мужской'].includes(v)) return 'male'
-  if (['female', 'woman', 'f', 'женский'].includes(v)) return 'female'
+  if (['male', 'man', 'm'].includes(v)) return 'male'
+  if (['female', 'woman', 'f'].includes(v)) return 'female'
   if (['other'].includes(v)) return 'other'
   return 'unknown'
 }

@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-[460px] bg-slate-50 flex items-center justify-center p-4">
-    <Card class="login-card w-full shadow-md border border-slate-200">
+  <div class="min-h-[460px] flex items-center justify-center p-4">
+    <Card class="login-card fpc-surface w-full">
       <template #header>
         <div class="px-6 pt-6">
-          <h2 class="text-xl font-semibold text-slate-800">FHIR Collector</h2>
-          <p class="text-sm text-slate-500 mt-1">Войдите в систему</p>
+          <h2 class="text-xl font-semibold fpc-title">FHIR Collector</h2>
+          <p class="text-sm fpc-subtle mt-1">Sign in</p>
         </div>
       </template>
 
       <template #content>
         <div class="flex flex-col gap-4 px-0 pb-6">
           <div class="flex flex-col gap-1">
-            <label for="login-username" class="text-sm font-medium text-slate-700">Логин</label>
+            <label for="login-username" class="text-sm font-medium fpc-title">Username</label>
             <InputText
               inputId="login-username"
               v-model="username"
@@ -23,7 +23,7 @@
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="login-password" class="text-sm font-medium text-slate-700">Пароль</label>
+            <label for="login-password" class="text-sm font-medium fpc-title">Password</label>
             <Password
               inputId="login-password"
               v-model="password"
@@ -40,7 +40,7 @@
 
           <Button
             :loading="loading"
-            label="Войти"
+            label="Sign In"
             class="w-full"
             @click="doLogin"
           />

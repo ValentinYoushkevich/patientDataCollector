@@ -2,7 +2,7 @@ import { validatePatient } from './validator.js'
 
 export async function sendBundle(bundle, endpoint, token, timeoutMs = 15000) {
   if (!endpoint) {
-    throw new Error('FHIR endpoint не настроен')
+    throw new Error('FHIR endpoint is not configured')
   }
 
   for (const entry of bundle.entry || []) {

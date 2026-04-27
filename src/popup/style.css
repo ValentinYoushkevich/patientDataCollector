@@ -2,12 +2,67 @@
 
 :root {
   color-scheme: light;
+  --fpc-primary-navy: #0D47A1;
+  --fpc-secondary-navy: #1565C0;
+  --fpc-fhir-teal: #00BCD4;
+  --fpc-inner-teal: #00838F;
+  --fpc-white: #FFFFFF;
+  --fpc-bg-soft: #eef5ff;
 }
 
 body {
   margin: 0;
   width: 460px;
   min-height: 460px;
-  background: #f8fafc;
+  background: linear-gradient(180deg, var(--fpc-bg-soft) 0%, #ffffff 45%);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+#app {
+  min-height: 460px;
+}
+
+.fpc-surface {
+  border: 1px solid #d6e4ff;
+  background: var(--fpc-white);
+  box-shadow: 0 4px 14px rgba(13, 71, 161, 0.08);
+}
+
+.fpc-title {
+  color: var(--fpc-primary-navy);
+}
+
+.fpc-subtle {
+  color: var(--fpc-inner-teal);
+}
+
+.p-button {
+  border-color: var(--fpc-primary-navy) !important;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-text) {
+  background: var(--fpc-primary-navy) !important;
+  color: var(--fpc-white) !important;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-text):hover {
+  background: var(--fpc-secondary-navy) !important;
+  border-color: var(--fpc-secondary-navy) !important;
+}
+
+.p-button.p-button-secondary {
+  background: #e0f7fa !important;
+  border-color: #b2ebf2 !important;
+  color: var(--fpc-inner-teal) !important;
+}
+
+.p-button.p-button-text {
+  color: var(--fpc-secondary-navy) !important;
+}
+
+.p-inputtext:enabled:focus,
+.p-select:focus,
+.p-inputnumber-input:enabled:focus {
+  border-color: var(--fpc-fhir-teal) !important;
+  box-shadow: 0 0 0 0.15rem rgba(0, 188, 212, 0.2) !important;
 }

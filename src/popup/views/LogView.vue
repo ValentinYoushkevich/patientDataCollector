@@ -1,9 +1,9 @@
 <template>
-  <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="fpc-surface rounded-lg p-4">
     <div class="flex items-center justify-between mb-2">
-      <h3 class="text-sm font-semibold text-slate-800">Последние отправки</h3>
+      <h3 class="text-sm font-semibold fpc-title">Recent Sends</h3>
       <Button
-        label="Очистить"
+        label="Clear"
         text
         severity="secondary"
         size="small"
@@ -12,18 +12,18 @@
       />
     </div>
 
-    <p v-if="!logs.length" class="text-xs text-slate-500">
-      Логи отправок пока отсутствуют.
+    <p v-if="!logs.length" class="text-xs fpc-subtle">
+      No send logs yet.
     </p>
 
     <div v-else class="space-y-2">
       <div
         v-for="(log, idx) in logs"
         :key="`${log.at}-${idx}`"
-        class="rounded border border-slate-200 p-2 text-xs text-slate-600"
+        class="rounded border border-[#d6e4ff] p-2 text-xs text-[#1565C0]"
       >
-        <div><span class="font-medium">Дата:</span> {{ formatDate(log.at) }}</div>
-        <div><span class="font-medium">Система:</span> {{ log.system }}</div>
+        <div><span class="font-medium">Date:</span> {{ formatDate(log.at) }}</div>
+        <div><span class="font-medium">System:</span> {{ log.system }}</div>
         <div><span class="font-medium">Endpoint:</span> {{ log.endpoint }}</div>
         <div><span class="font-medium">ID:</span> {{ log.resultId }}</div>
       </div>

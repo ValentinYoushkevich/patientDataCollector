@@ -2,31 +2,31 @@
   <div class="p-4 flex flex-col gap-4">
     <Toast />
 
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="fpc-surface rounded-lg p-4">
       <div class="flex items-start justify-between gap-2">
         <div>
-          <h2 class="text-base font-semibold text-slate-800">FHIR Collector</h2>
-          <p class="text-sm text-slate-600 mt-1">
-            Вы вошли как <span class="font-medium">{{ username }}</span>
+          <h2 class="text-base font-semibold fpc-title">FHIR Collector</h2>
+          <p class="text-sm fpc-subtle mt-1">
+            Logged in as <span class="font-medium">{{ username }}</span>
           </p>
         </div>
         <div v-if="uiScreen === 'main'" class="flex items-center gap-1">
-          <Button
+          <!-- <Button
             v-tooltip.top="'Settings'"
             icon="pi pi-cog"
             text
             rounded
             severity="secondary"
-            aria-label="Открыть настройки"
+            aria-label="Open settings"
             @click="openSettings"
-          />
+          /> -->
           <Button
             v-tooltip.top="'Logout'"
             icon="pi pi-sign-out"
             text
             rounded
             severity="secondary"
-            aria-label="Выйти"
+            aria-label="Logout"
             @click="$emit('logout')"
           />
         </div>
@@ -34,24 +34,24 @@
     </div>
 
     <template v-if="uiScreen === 'main'">
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="fpc-surface rounded-lg p-4">
         <SelectSystem />
-        <p v-if="AUTO_DETECT_SYSTEM" class="text-xs text-slate-500 mt-2">
-          {{ detectedSystem ? `Auto-detect: ${detectedSystem}` : 'Auto-detect не сработал, используется выбор вручную.' }}
+        <p v-if="AUTO_DETECT_SYSTEM" class="text-xs fpc-subtle mt-2">
+          {{ detectedSystem ? `Auto-detect: ${detectedSystem}` : 'Auto-detect failed, using manual selection.' }}
         </p>
       </div>
 
-      <div v-if="phase === 'idle'" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <Button label="Спарсить данные" icon="pi pi-download" class="w-full" @click="doParse" />
+      <div v-if="phase === 'idle'" class="fpc-surface rounded-lg p-4">
+        <Button label="Parse Data" icon="pi pi-download" class="w-full" @click="doParse" />
       </div>
 
       <div
         v-if="phase === 'parsing' || phase === 'sending'"
-        class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+        class="fpc-surface rounded-lg p-4"
       >
-        <div class="flex items-center gap-2 text-slate-700">
+        <div class="flex items-center gap-2 fpc-title">
           <i class="pi pi-spin pi-spinner" />
-          <span>{{ phase === 'parsing' ? 'Считываю данные со страницы...' : 'Отправляю на FHIR endpoint...' }}</span>
+          <span>{{ phase === 'parsing' ? 'Reading data from page...' : 'Sending to FHIR endpoint...' }}</span>
         </div>
       </div>
 
@@ -59,18 +59,18 @@
         {{ parseError }}
       </Message>
 
-      <div v-if="isParsedPhase" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div v-if="isParsedPhase" class="fpc-surface rounded-lg p-4">
         <PatientCard :data="parsedData" :fhirErrors="fhirErrors" />
         <div class="flex flex-col gap-2 mt-3">
           <Button
-            label="Отправить на FHIR endpoint"
+            label="Send to FHIR endpoint"
             icon="pi pi-send"
             :disabled="phase === 'fhir-invalid'"
             class="w-full"
             @click="doSend"
           />
           <Button
-            label="Спарсить снова"
+            label="Parse Again"
             icon="pi pi-refresh"
             severity="secondary"
             class="w-full"
@@ -89,17 +89,17 @@
     </template>
 
     <template v-else>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="fpc-surface rounded-lg p-4">
         <div class="flex items-center gap-2 mb-2">
           <Button
             icon="pi pi-arrow-left"
             text
             rounded
             severity="secondary"
-            aria-label="Назад"
+            aria-label="Back"
             @click="closeSettingsWithoutSave"
           />
-          <h3 class="text-sm font-semibold text-slate-800">Настройки отправки</h3>
+          <h3 class="text-sm font-semibold fpc-title">Send Settings</h3>
         </div>
         <div class="flex flex-col gap-2">
           <InputText v-model="settingsDraft.fhirEndpoint" placeholder="FHIR endpoint URL" />
@@ -115,15 +115,15 @@
           />
         </div>
         <div class="flex gap-2 mt-3">
-          <Button label="Сохранить настройки" icon="pi pi-save" size="small" @click="saveSettingsClick" />
-          <Button label="Назад" icon="pi pi-arrow-left" severity="secondary" size="small" @click="closeSettingsWithoutSave" />
+          <Button label="Save Settings" icon="pi pi-save" size="small" @click="saveSettingsClick" />
+          <Button label="Back" icon="pi pi-arrow-left" severity="secondary" size="small" @click="closeSettingsWithoutSave" />
         </div>
       </div>
     </template>
 
     <Button
       v-if="uiScreen !== 'main'"
-      label="Выйти"
+      label="Logout"
       icon="pi pi-sign-out"
       severity="secondary"
       @click="$emit('logout')"
@@ -186,7 +186,7 @@ const isParsedPhase = computed(() =>
 async function collectFromTab(systemId) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   if (!tab?.id) {
-    throw new Error('Активная вкладка не найдена')
+    throw new Error('Active tab was not found')
   }
 
   const payload = {
@@ -208,7 +208,7 @@ async function collectFromTab(systemId) {
         response = await chrome.tabs.sendMessage(tab.id, payload)
       } catch {
         throw new Error(
-          'Не удалось подключить content script. Откройте поддерживаемую страницу (localhost / systemA/systemB/systemC) и обновите вкладку.'
+          'Failed to attach content script. Open a supported page (localhost / systemA/systemB/systemC) and refresh the tab.'
         )
       }
     } else {
@@ -217,7 +217,7 @@ async function collectFromTab(systemId) {
   }
 
   if (!response?.ok) {
-    throw new Error(response?.error ?? 'Не удалось получить данные')
+    throw new Error(response?.error ?? 'Failed to collect data')
   }
 
   return response.data
@@ -261,7 +261,7 @@ async function doParse() {
       phase.value = 'parsed'
     }
   } catch (err) {
-    parseError.value = err?.message ?? 'Ошибка парсинга'
+    parseError.value = err?.message ?? 'Parsing error'
     phase.value = 'parse-error'
   }
 }
@@ -285,7 +285,7 @@ async function doSend() {
     })
 
     if (!response?.ok) {
-      throw new Error(response?.error ?? 'Ошибка отправки')
+      throw new Error(response?.error ?? 'Send failed')
     }
 
     sendLogs.value = await appendSendLog({
@@ -298,12 +298,12 @@ async function doSend() {
     phase.value = 'sent'
     toast.add({
       severity: 'success',
-      summary: 'Отправлено',
+      summary: 'Sent',
       detail: `ID: ${response.result?.id ?? 'ok'}`,
       life: 5000
     })
   } catch (err) {
-    sendError.value = err?.message ?? 'Ошибка отправки'
+    sendError.value = err?.message ?? 'Send error'
     phase.value = 'send-error'
   }
 }
@@ -314,8 +314,8 @@ async function saveSettingsClick() {
   uiScreen.value = 'main'
   toast.add({
     severity: 'success',
-    summary: 'Сохранено',
-    detail: 'Настройки обновлены',
+    summary: 'Saved',
+    detail: 'Settings updated',
     life: 2500
   })
 }

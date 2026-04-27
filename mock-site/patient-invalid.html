@@ -10,10 +10,17 @@
       label { font-weight: bold; min-width: 150px; display: inline-block; }
       .badge { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
       .invalid { color: #dc2626; font-weight: bold; }
+      .nav { margin: 16px 0 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+      .nav a { color: #2563eb; text-decoration: none; font-weight: 600; }
+      .nav a:hover { text-decoration: underline; }
     </style>
   </head>
   <body>
     <h1>Patient Record <span class="badge">INVALID DATA</span></h1>
+    <div class="nav">
+      <a href="./patient-full.html">Go to Full</a>
+      <a href="./patient-partial.html">Go to Partial</a>
+    </div>
 
     <div class="field"><label>MRN:</label><span data-field="mrn">PAT-00789</span></div>
     <div class="field"><label>Last Name:</label><span data-field="last-name">Johnson</span></div>

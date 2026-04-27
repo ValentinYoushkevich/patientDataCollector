@@ -2,9 +2,9 @@
   <div class="flex flex-col gap-1">
     <label
       for="system-select"
-      class="text-xs font-medium text-slate-500 uppercase tracking-wide"
+      class="text-xs font-medium fpc-subtle uppercase tracking-wide"
     >
-      Система
+      System
     </label>
     <Select
       inputId="system-select"
@@ -12,7 +12,7 @@
       :options="systems"
       optionLabel="label"
       optionValue="value"
-      placeholder="Выберите систему"
+      placeholder="Select system"
       class="w-full"
       @change="save"
     />

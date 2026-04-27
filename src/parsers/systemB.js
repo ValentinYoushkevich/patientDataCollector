@@ -25,7 +25,7 @@ export function parseSystemB(doc) {
   const required = ['mrn', 'family', 'birthDate']
   const missingRequired = required.filter((key) => !raw[key])
   if (missingRequired.length > 0) {
-    throw new Error(`Не найдены обязательные поля: ${missingRequired.join(', ')}`)
+    throw new Error(`Required fields not found: ${missingRequired.join(', ')}`)
   }
 
   return raw
