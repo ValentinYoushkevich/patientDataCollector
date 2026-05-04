@@ -5,14 +5,26 @@
       <span class="font-medium text-[#0D47A1]">Data parsed successfully</span>
     </div>
 
-    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-[#1565C0]">
-      <span class="font-medium">MRN:</span><span>{{ data.mrn }}</span>
-      <span class="font-medium">Name:</span><span>{{ data.given }} {{ data.family }}</span>
-      <span class="font-medium">DOB:</span><span>{{ data.birthDate }}</span>
-      <span class="font-medium">Gender:</span><span>{{ data.gender }}</span>
-      <span class="font-medium">Phone:</span><span>{{ data.phone || '—' }}</span>
-      <span class="font-medium">System:</span><span>{{ data._system }}</span>
+    <div class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-3 gap-y-1 text-[#1565C0]">
+      <span class="font-medium">MRN*:</span>
+      <span class="truncate" :title="display(data.mrn)">{{ display(data.mrn) }}</span>
+
+      <span class="font-medium">Name*:</span>
+      <span class="truncate" :title="fullName">{{ fullName }}</span>
+
+      <span class="font-medium">DOB*:</span>
+      <span class="truncate" :title="display(data.birthDate)">{{ display(data.birthDate) }}</span>
+
+      <span class="font-medium">Gender*:</span>
+      <span class="truncate" :title="display(data.gender)">{{ display(data.gender) }}</span>
+
+      <span class="font-medium">Phone:</span>
+      <span class="truncate" :title="display(data.phone)">{{ display(data.phone) }}</span>
+
+      <span class="font-medium">System:</span>
+      <span class="truncate" :title="display(data._system)">{{ display(data._system) }}</span>
     </div>
+    <div class="text-[11px] text-[#5f6b8a] mt-2">* Required (US Core)</div>
 
     <div
       v-if="data._missingFields?.length"
@@ -44,7 +56,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   data: {
     type: Object,
     required: true
@@ -54,4 +68,16 @@ defineProps({
     default: () => []
   }
 })
+
+function display(value) {
+  return value ? String(value) : '—'
+}
+
+const fullName = computed(() => {
+  const given = props.data?.given ? String(props.data.given).trim() : ''
+  const family = props.data?.family ? String(props.data.family).trim() : ''
+  const value = `${given} ${family}`.trim()
+  return value || '—'
+})
+
 </script>

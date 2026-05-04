@@ -24,6 +24,7 @@ onMounted(async () => {
 })
 
 async function handleLoggedIn() {
+  await chrome.storage.local.remove('systemId')
   isLoggedIn.value = true
   const { authUser } = await chrome.storage.local.get('authUser')
   username.value = authUser ?? 'User'

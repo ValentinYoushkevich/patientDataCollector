@@ -23,21 +23,28 @@
 import Select from 'primevue/select'
 import { onMounted, ref } from 'vue'
 
+const emit = defineEmits(['change'])
+
 const systems = [
   { value: 'systemA', label: 'System A - Compliance Portal' },
   { value: 'systemB', label: 'System B - InsuranceTrack' },
   { value: 'systemC', label: 'System C - MedVerify' }
 ]
 
-const selected = ref('systemA')
+const selected = ref(null)
 
 onMounted(async () => {
   const { systemId } = await chrome.storage.local.get('systemId')
-  selected.value = systemId ?? 'systemA'
-  await chrome.storage.local.set({ systemId: selected.value })
+  selected.value = systemId ?? null
+  emit('change', selected.value)
 })
 
 async function save() {
-  await chrome.storage.local.set({ systemId: selected.value })
+  if (selected.value) {
+    await chrome.storage.local.set({ systemId: selected.value })
+  } else {
+    await chrome.storage.local.remove('systemId')
+  }
+  emit('change', selected.value)
 }
 </script>

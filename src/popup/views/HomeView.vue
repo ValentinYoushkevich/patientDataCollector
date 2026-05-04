@@ -38,7 +38,10 @@
 
     <template v-if="uiScreen === 'main'">
       <div class="fpc-surface rounded-lg p-4">
-        <SelectSystem />
+        <SelectSystem @change="handleSystemChange" />
+        <Message v-if="systemValidationError" severity="error" class="mt-2">
+          {{ systemValidationError }}
+        </Message>
         <p v-if="AUTO_DETECT_SYSTEM" class="text-xs fpc-subtle mt-2">
           {{ detectedSystem ? `Auto-detect: ${detectedSystem}` : 'Auto-detect failed, using manual selection.' }}
         </p>
@@ -173,6 +176,7 @@ const parseError = ref('')
 const sendError = ref('')
 const fhirErrors = ref([])
 const detectedSystem = ref('')
+const systemValidationError = ref('')
 const sendLogs = ref([])
 const uiScreen = ref('main')
 const settings = ref({
@@ -231,7 +235,7 @@ async function detectAndStoreSystem() {
   if (!AUTO_DETECT_SYSTEM) {
     detectedSystem.value = ''
     const { systemId } = await chrome.storage.local.get('systemId')
-    return systemId || 'systemA'
+    return systemId || ''
   }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -241,16 +245,25 @@ async function detectAndStoreSystem() {
     await chrome.storage.local.set({ systemId: autoSystem })
   }
   const { systemId } = await chrome.storage.local.get('systemId')
-  return autoSystem || systemId || 'systemA'
+  return autoSystem || systemId || ''
 }
 
 async function doParse() {
-  phase.value = 'parsing'
   parseError.value = ''
   fhirErrors.value = []
+  sendError.value = ''
+
+  const systemId = await detectAndStoreSystem()
+  if (!systemId) {
+    systemValidationError.value = 'Please select a system before parsing data.'
+    phase.value = 'idle'
+    return
+  }
+
+  systemValidationError.value = ''
+  phase.value = 'parsing'
 
   try {
-    const systemId = await detectAndStoreSystem()
     parsedData.value = await collectFromTab(systemId)
 
     const patientResource = toFHIRPatient(parsedData.value)
@@ -267,6 +280,12 @@ async function doParse() {
   } catch (err) {
     parseError.value = err?.message ?? 'Parsing error'
     phase.value = 'parse-error'
+  }
+}
+
+function handleSystemChange(systemId) {
+  if (systemId) {
+    systemValidationError.value = ''
   }
 }
 
