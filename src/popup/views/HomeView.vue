@@ -7,7 +7,7 @@
         <div class="flex items-center gap-2">
           <img :src="brandIconUrl" alt="FHIR Collector icon" class="h-10 w-10 rounded-sm mt-0.5" />
           <div>
-            <h2 class="text-base font-semibold fpc-title">FHIR Collector</h2>
+            <h2 class="text-base font-semibold fpc-title">FHIR Patient data collector</h2>
             <p class="text-sm fpc-subtle mt-1">
               Logged in as <span class="font-medium">{{ username }}</span>
             </p>
@@ -66,7 +66,7 @@
       </Message>
 
       <div v-if="isParsedPhase" class="fpc-surface rounded-lg p-4">
-        <PatientCard :data="parsedData" :fhirErrors="fhirErrors" />
+        <PatientCard :data="parsedData" :fhirErrors="fhirErrors" @update:data="handleParsedDataUpdate" />
         <div class="flex flex-col gap-2 mt-3">
           <Button
             label="Send to FHIR endpoint"
@@ -286,6 +286,22 @@ async function doParse() {
 function handleSystemChange(systemId) {
   if (systemId) {
     systemValidationError.value = ''
+  }
+}
+
+function handleParsedDataUpdate(nextData) {
+  parsedData.value = nextData
+
+  const patientResource = toFHIRPatient(parsedData.value)
+  const validation = validatePatientSoft(patientResource)
+  fhirErrors.value = validation.errors
+
+  if (validation.errors.length > 0) {
+    phase.value = 'fhir-invalid'
+  } else if (parsedData.value?._missingFields?.length > 0) {
+    phase.value = 'parsed-partial'
+  } else {
+    phase.value = 'parsed'
   }
 }
 
