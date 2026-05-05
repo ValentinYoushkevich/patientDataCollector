@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SystemA - Invalid Patient</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; max-width: 760px; color: #0f172a; }
+      .field { margin: 8px 0; }
+      label { font-weight: bold; min-width: 150px; display: inline-block; }
+      .badge { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+      .invalid { color: #dc2626; font-weight: bold; }
+      .nav { margin: 16px 0 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+      .nav a { color: #2563eb; text-decoration: none; font-weight: 600; }
+      .nav a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <h1>Patient Record <span class="badge">INVALID DATA</span></h1>
+    <div class="nav">
+      <a href="./patient-full.html">Go to Full</a>
+      <a href="./patient-partial.html">Go to Partial</a>
+    </div>
+
+    <div class="field"><label>MRN:</label><span data-field="mrn">PAT-00789</span></div>
+    <div class="field"><label>Last Name:</label><span data-field="last-name">Johnson</span></div>
+    <div class="field"><label>First Name:</label><span data-field="first-name">Robert</span></div>
+    <div class="field"><label>Date of Birth:</label><span data-field="dob" class="invalid">15-03-1978</span></div>
+    <div class="field"><label>Gender:</label><span data-field="gender" class="invalid">invalid-gender</span></div>
+    <div class="field"><label>Phone:</label><span data-field="phone">+1 555-999-0001</span></div>
+    <div class="field"><label>Email:</label><span data-field="email">robert.johnson@email.com</span></div>
+    <div class="field"><label>Address:</label><span data-field="address">456 Oak Ave</span></div>
+    <div class="field"><label>City:</label><span data-field="city">Denver</span></div>
+    <div class="field"><label>State:</label><span data-field="state">CO</span></div>
+    <div class="field"><label>ZIP:</label><span data-field="zip">80201</span></div>
+    <div class="field"><label>Language:</label><span data-field="language" class="invalid">English</span></div>
+  </body>
+</html>
