@@ -12,6 +12,19 @@
       .nav { margin: 16px 0 20px; display: flex; gap: 10px; flex-wrap: wrap; }
       .nav a { color: #2563eb; text-decoration: none; font-weight: 600; }
       .nav a:hover { text-decoration: underline; }
+      .actions { margin: 8px 0 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+      button {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:hover { background: #1d4ed8; }
+      .status { color: #334155; font-size: 14px; }
+      .status.error { color: #991b1b; }
     </style>
   </head>
   <body>
@@ -20,9 +33,13 @@
       <a href="./patient-partial.html">Go to Partial</a>
       <a href="./patient-invalid.html">Go to Invalid</a>
     </div>
+    <div class="actions">
+      <button type="button" id="refresh-smart-data">Refresh from SMART FHIR</button>
+      <span id="smart-status" class="status">Loading SMART sandbox patient...</span>
+    </div>
 
     <div class="field"><label>MRN:</label><span data-field="mrn">PAT-00123</span></div>
-    <div class="field"><label>Last Name:</label><span data-field="last-name">Doe11111111222222222222222222222111111111111111111111111111111</span></div>
+    <div class="field"><label>Last Name:</label><span data-field="last-name">Doe</span></div>
     <div class="field"><label>First Name:</label><span data-field="first-name">John</span></div>
     <div class="field"><label>Date of Birth:</label><span data-field="dob">1985-03-15</span></div>
     <div class="field"><label>Gender:</label><span data-field="gender">male</span></div>
@@ -33,5 +50,69 @@
     <div class="field"><label>State:</label><span data-field="state">IL</span></div>
     <div class="field"><label>ZIP:</label><span data-field="zip">62701</span></div>
     <div class="field"><label>Language:</label><span data-field="language">en</span></div>
+    <script>
+      const SMART_PATIENT_URL = "https://r4.smarthealthit.org/Patient?_count=1";
+      const field = (name) => document.querySelector(`[data-field="${name}"]`);
+      const statusEl = document.getElementById("smart-status");
+      const refreshButton = document.getElementById("refresh-smart-data");
+
+      const setStatus = (message, isError = false) => {
+        statusEl.textContent = message;
+        statusEl.classList.toggle("error", isError);
+      };
+
+      const setField = (name, value) => {
+        const el = field(name);
+        if (!el) return;
+        el.textContent = value && String(value).trim() ? String(value).trim() : "";
+      };
+
+      const readTelecom = (patient, system) =>
+        patient.telecom?.find((item) => item.system === system && item.value)?.value || "";
+
+      const refillFromSmart = async () => {
+        try {
+          refreshButton.disabled = true;
+          setStatus("Loading SMART sandbox patient...");
+
+          const response = await fetch(SMART_PATIENT_URL, { method: "GET" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const bundle = await response.json();
+          const patient = bundle?.entry?.[0]?.resource;
+          if (!patient) throw new Error("Patient entry is missing in response");
+
+          const humanName = patient.name?.[0] || {};
+          const firstName = humanName.given?.join(" ") || "";
+          const lastName = humanName.family || "";
+          const identifier = patient.identifier?.find((item) => item.value)?.value || patient.id || "";
+          const address = patient.address?.[0] || {};
+          const line = address.line?.join(", ") || "";
+          const language = patient.communication?.[0]?.language?.coding?.[0]?.code || "";
+
+          setField("mrn", identifier);
+          setField("first-name", firstName);
+          setField("last-name", lastName);
+          setField("dob", patient.birthDate || "");
+          setField("gender", patient.gender || "");
+          setField("phone", readTelecom(patient, "phone"));
+          setField("email", readTelecom(patient, "email"));
+          setField("address", line);
+          setField("city", address.city || "");
+          setField("state", address.state || "");
+          setField("zip", address.postalCode || "");
+          setField("language", language);
+
+          setStatus(`Loaded patient ${patient.id || "unknown"} from SMART sandbox`);
+        } catch (error) {
+          setStatus(`SMART load failed: ${error.message}. Using local fallback values.`, true);
+        } finally {
+          refreshButton.disabled = false;
+        }
+      };
+
+      refreshButton.addEventListener("click", refillFromSmart);
+      refillFromSmart();
+    </script>
   </body>
 </html>
