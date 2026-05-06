@@ -278,6 +278,8 @@
           const address = patient.address?.[0] || {};
           const line = address.line?.join(", ") || "";
           const language = patient.communication?.[0]?.language?.coding?.[0]?.code || "";
+          const currentEmail = field("email")?.textContent?.trim() || "";
+          const emailFromSmart = readTelecom(patient, "email");
 
           setField("mrn", identifier);
           setField("first-name", firstName);
@@ -285,7 +287,7 @@
           setField("dob", patient.birthDate || "");
           setField("gender", patient.gender || "");
           setField("phone", readTelecom(patient, "phone"));
-          setField("email", readTelecom(patient, "email"));
+          setField("email", emailFromSmart || currentEmail);
           setField("address", line);
           setField("city", address.city || "");
           setField("state", address.state || "");
