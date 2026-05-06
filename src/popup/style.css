@@ -12,8 +12,8 @@
 
 body {
   margin: 0;
-  width: 460px;
-  min-height: 460px;
+  width: 500px;
+  min-height: 700px;
   background: linear-gradient(180deg, var(--fpc-bg-soft) 0%, #ffffff 45%);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
