@@ -101,3 +101,17 @@ npx serve mock-site -p 3001
 
 - Основной документ: `documentation/FHIR_ChromeExtension_Documentation.docx`
 - Планы этапов: `Documentation Plans/`
+
+## Локальный запуск для демонстрации (без режима разработки)
+
+У вас есть архив с папкой `dist`
+
+1. Подключите собранное расширение в Chrome:
+   - Откройте `chrome://extensions`
+   - Включите `Developer mode`
+   - Нажмите `Load unpacked`
+   - Выберите папку `dist`
+
+2. Откройте демонстрационный сайт и проверьте сценарии:
+   - Full patient: `https://valentinyoushkevich.github.io/patientDataCollector/patient-full.html`
+   - Partial patient: `https://valentinyoushkevich.github.io/patientDataCollector/patient-partial.html`
