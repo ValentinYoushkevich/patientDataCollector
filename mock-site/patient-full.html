@@ -5,51 +5,240 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SystemA - Full Patient</title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 24px; max-width: 760px; color: #0f172a; }
-      .field { margin: 8px 0; }
-      label { font-weight: bold; min-width: 150px; display: inline-block; }
-      .badge { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
-      .nav { margin: 16px 0 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-      .nav a { color: #2563eb; text-decoration: none; font-weight: 600; }
-      .nav a:hover { text-decoration: underline; }
-      .actions { margin: 8px 0 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-      button {
+      :root {
+        --bg: #e2e8f0;
+        --panel: #f8fafc;
+        --line: #94a3b8;
+        --text: #0f172a;
+        --muted: #475569;
+        --ok-bg: #dcfce7;
+        --ok-text: #166534;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .page {
+        max-width: 1100px;
+        margin: 20px auto;
+        padding: 18px;
+      }
+      .frame {
+        border: 1px solid var(--line);
+        background: #dce6ee;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        background: #0f766e;
+        color: #ecfeff;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .meta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .badge {
+        background: var(--ok-bg);
+        color: var(--ok-text);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .record-id {
+        font-size: 13px;
+        color: #ccfbf1;
+      }
+      .toolbar {
+        padding: 12px 18px;
+        border-top: 1px solid #0b5f58;
+        background: #115e59;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .toolbar a {
+        color: #dbeafe;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .toolbar a:hover { text-decoration: underline; }
+      .toolbar button {
+        border: 0;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-weight: 700;
         background: #2563eb;
         color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 12px;
         cursor: pointer;
-        font-weight: 600;
       }
-      button:hover { background: #1d4ed8; }
-      .status { color: #334155; font-size: 14px; }
-      .status.error { color: #991b1b; }
+      .toolbar button:hover { background: #1d4ed8; }
+      .status {
+        color: #ccfbf1;
+        font-size: 13px;
+      }
+      .status.error { color: #fecaca; }
+      .content {
+        padding: 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .section {
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .section h2 {
+        margin: 0;
+        padding: 10px 12px;
+        font-size: 18px;
+        background: #cbd5e1;
+        border-bottom: 1px solid var(--line);
+      }
+      .grid {
+        padding: 12px;
+        display: grid;
+        gap: 10px 14px;
+      }
+      .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+      .field .field-label {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .value {
+        min-height: 34px;
+        border: 1px solid var(--line);
+        background: #fff;
+        padding: 8px 10px;
+      }
+      .span-2 { grid-column: span 2; }
+      .span-3 { grid-column: span 3; }
+      @media (max-width: 900px) {
+        .grid.cols-4,
+        .grid.cols-3,
+        .grid.cols-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .grid.cols-4,
+        .grid.cols-3,
+        .grid.cols-2 {
+          grid-template-columns: 1fr;
+        }
+        .span-2,
+        .span-3 {
+          grid-column: span 1;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>Patient Record <span class="badge">FULL DATA</span></h1>
-    <div class="nav">
-      <a href="./patient-partial.html">Go to Partial</a>
-      <a href="./patient-invalid.html">Go to Invalid</a>
-    </div>
-    <div class="actions">
-      <button type="button" id="refresh-smart-data">Refresh from SMART FHIR</button>
-      <span id="smart-status" class="status">Loading SMART sandbox patient...</span>
-    </div>
+    <main class="page">
+      <div class="frame">
+        <header class="header">
+          <h1>Patient Intake</h1>
+          <div class="meta">
+            <span class="record-id">Chart: PAT-00123</span>
+            <span class="badge">FULL DATA</span>
+          </div>
+        </header>
+        <div class="toolbar">
+          <a href="./patient-partial.html">Open Partial</a>
+          <a href="./patient-invalid.html">Open Invalid</a>
+          <button type="button" id="refresh-smart-data">Refresh from SMART FHIR</button>
+          <span id="smart-status" class="status">Loading SMART sandbox patient...</span>
+        </div>
 
-    <div class="field"><label>MRN:</label><span data-field="mrn">PAT-00123</span></div>
-    <div class="field"><label>Last Name:</label><span data-field="last-name">Doe</span></div>
-    <div class="field"><label>First Name:</label><span data-field="first-name">John</span></div>
-    <div class="field"><label>Date of Birth:</label><span data-field="dob">1985-03-15</span></div>
-    <div class="field"><label>Gender:</label><span data-field="gender">male</span></div>
-    <div class="field"><label>Phone:</label><span data-field="phone">+1 555-123-4567</span></div>
-    <div class="field"><label>Email:</label><span data-field="email">john.doe@email.com</span></div>
-    <div class="field"><label>Address:</label><span data-field="address">123 Main St</span></div>
-    <div class="field"><label>City:</label><span data-field="city">Springfield</span></div>
-    <div class="field"><label>State:</label><span data-field="state">IL</span></div>
-    <div class="field"><label>ZIP:</label><span data-field="zip">62701</span></div>
-    <div class="field"><label>Language:</label><span data-field="language">en</span></div>
+        <div class="content">
+          <section class="section">
+            <h2>Demographic & Contact Information</h2>
+            <div class="grid cols-4">
+              <div class="field">
+                <div class="field-label">MRN</div>
+                <div class="value" data-field="mrn">PAT-00123</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Last Name</div>
+                <div class="value" data-field="last-name">Doe</div>
+              </div>
+              <div class="field">
+                <div class="field-label">First Name</div>
+                <div class="value" data-field="first-name">John</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Date of Birth</div>
+                <div class="value" data-field="dob">1985-03-15</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Gender</div>
+                <div class="value" data-field="gender">male</div>
+              </div>
+              <div class="field span-2">
+                <div class="field-label">Primary Phone</div>
+                <div class="value" data-field="phone">+1 555-123-4567</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Language</div>
+                <div class="value" data-field="language">en</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>Address Information</h2>
+            <div class="grid cols-3">
+              <div class="field span-3">
+                <div class="field-label">Street Address</div>
+                <div class="value" data-field="address">123 Main St</div>
+              </div>
+              <div class="field">
+                <div class="field-label">City</div>
+                <div class="value" data-field="city">Springfield</div>
+              </div>
+              <div class="field">
+                <div class="field-label">State</div>
+                <div class="value" data-field="state">IL</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Postal Code</div>
+                <div class="value" data-field="zip">62701</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>Communication Preferences</h2>
+            <div class="grid cols-2">
+              <div class="field">
+                <div class="field-label">Email</div>
+                <div class="value" data-field="email">john.doe@email.com</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Preferred Contact Method</div>
+                <div class="value">Cell Phone</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
     <script>
       const SMART_PATIENT_URL = "https://r4.smarthealthit.org/Patient?_count=1";
       const field = (name) => document.querySelector(`[data-field="${name}"]`);
