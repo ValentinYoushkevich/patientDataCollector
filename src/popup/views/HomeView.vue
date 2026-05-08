@@ -7,14 +7,11 @@
         <div class="flex items-center gap-2">
           <img :src="brandIconUrl" alt="FHIR Collector icon" class="h-10 w-10 rounded-sm mt-0.5" />
           <div>
-            <h2 class="text-base font-semibold fpc-title">FHIR Patient data collector</h2>
-            <p class="text-sm fpc-subtle mt-1">
-              Logged in as <span class="font-medium">{{ username }}</span>
-            </p>
+            <h2 class="text-base font-semibold fpc-title">Referral Data Collector</h2>
           </div>
         </div>
         <div v-if="uiScreen === 'main'" class="flex items-center gap-1">
-          <!-- <Button
+          <Button
             v-tooltip.top="'Settings'"
             icon="pi pi-cog"
             text
@@ -22,15 +19,6 @@
             severity="secondary"
             aria-label="Open settings"
             @click="openSettings"
-          /> -->
-          <Button
-            v-tooltip.top="'Logout'"
-            icon="pi pi-sign-out"
-            text
-            rounded
-            severity="secondary"
-            aria-label="Logout"
-            @click="$emit('logout')"
           />
         </div>
       </div>
@@ -57,21 +45,23 @@
       >
         <div class="flex items-center gap-2 fpc-title">
           <i class="pi pi-spin pi-spinner" />
-          <span>{{ phase === 'parsing' ? 'Reading data from page...' : 'Sending to FHIR endpoint...' }}</span>
+          <span>{{ phase === 'parsing' ? 'Reading data from page...' : 'Sending referral...' }}</span>
         </div>
       </div>
 
       <Message v-if="phase === 'parse-error'" severity="error">
         {{ parseError }}
       </Message>
+      <Message v-if="phase === 'parsed-partial'" severity="warn">
+        Some required patient fields are missing. Please fill them before sending.
+      </Message>
 
       <div v-if="isParsedPhase" class="fpc-surface rounded-lg p-4">
-        <PatientCard :data="parsedData" :fhirErrors="fhirErrors" @update:data="handleParsedDataUpdate" />
+        <PatientCard :data="parsedData" @update:data="handleParsedDataUpdate" />
         <div class="flex flex-col gap-2 mt-3">
           <Button
-            label="Send to FHIR endpoint"
+            label="Send referral"
             icon="pi pi-send"
-            :disabled="phase === 'fhir-invalid'"
             class="w-full"
             @click="doSend"
           />
@@ -108,7 +98,7 @@
           <h3 class="text-sm font-semibold fpc-title">Send Settings</h3>
         </div>
         <div class="flex flex-col gap-2">
-          <InputText v-model="settingsDraft.fhirEndpoint" placeholder="FHIR endpoint URL" />
+          <InputText v-model="settingsDraft.fhirEndpoint" placeholder="Referral endpoint URL" />
           <InputText v-model="settingsDraft.authToken" placeholder="Bearer token (optional)" />
           <InputNumber
             v-model="settingsDraft.requestTimeoutMs"
@@ -119,6 +109,14 @@
             suffix=" ms"
             fluid
           />
+          <Divider />
+          <h4 class="text-sm font-semibold fpc-title">Clinician & Organization</h4>
+          <InputText v-model="settingsDraft.clinicianFirstName" placeholder="Clinician first name" />
+          <InputText v-model="settingsDraft.clinicianLastName" placeholder="Clinician last name" />
+          <InputText v-model="settingsDraft.clinicianEmail" placeholder="Clinician email" />
+          <InputText v-model="settingsDraft.npiNumber" placeholder="NPI number" />
+          <InputText v-model="settingsDraft.organizationName" placeholder="Organization name" />
+          <InputText v-model="settingsDraft.organizationState" placeholder="Organization state" />
         </div>
         <div class="flex gap-2 mt-3">
           <Button label="Save Settings" icon="pi pi-save" size="small" @click="saveSettingsClick" />
@@ -127,13 +125,6 @@
       </div>
     </template>
 
-    <Button
-      v-if="uiScreen !== 'main'"
-      label="Logout"
-      icon="pi pi-sign-out"
-      severity="secondary"
-      @click="$emit('logout')"
-    />
   </div>
 </template>
 
@@ -142,14 +133,12 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
 
 import Button from 'primevue/button'
+import Divider from 'primevue/divider'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Toast from 'primevue/toast'
 
-import { buildBundle } from '../../fhir/bundle.js'
-import { toFHIRPatient } from '../../fhir/mapper.js'
-import { validatePatientSoft } from '../../fhir/validator.js'
 import { detectSystem } from '../../parsers/index.js'
 import { appendSendLog, clearSendLogs, getSendLogs, getSettings, saveSettings } from '../../utils/storage.js'
 import PatientCard from '../components/PatientCard.vue'
@@ -158,23 +147,13 @@ import LogView from './LogView.vue'
 
 const AUTO_DETECT_SYSTEM = false
 
-defineProps({
-  username: {
-    type: String,
-    default: 'User'
-  }
-})
-
-defineEmits(['logout'])
-
 const toast = useToast()
 
-// phase: idle | parsing | parse-error | parsed | parsed-partial | fhir-invalid | sending | send-error | sent
+// phase: idle | parsing | parse-error | parsed | parsed-partial | sending | send-error | sent
 const phase = ref('idle')
 const parsedData = ref(null)
 const parseError = ref('')
 const sendError = ref('')
-const fhirErrors = ref([])
 const detectedSystem = ref('')
 const systemValidationError = ref('')
 const sendLogs = ref([])
@@ -188,7 +167,7 @@ const settingsDraft = ref({ ...settings.value })
 const brandIconUrl = chrome.runtime.getURL('icons/icon32.png')
 
 const isParsedPhase = computed(() =>
-  ['parsed', 'parsed-partial', 'fhir-invalid', 'sent', 'send-error'].includes(phase.value)
+  ['parsed', 'parsed-partial', 'sent', 'send-error'].includes(phase.value)
 )
 
 async function collectFromTab(systemId) {
@@ -250,7 +229,6 @@ async function detectAndStoreSystem() {
 
 async function doParse() {
   parseError.value = ''
-  fhirErrors.value = []
   sendError.value = ''
 
   const systemId = await detectAndStoreSystem()
@@ -265,14 +243,7 @@ async function doParse() {
 
   try {
     parsedData.value = await collectFromTab(systemId)
-
-    const patientResource = toFHIRPatient(parsedData.value)
-    const validation = validatePatientSoft(patientResource)
-    fhirErrors.value = validation.errors
-
-    if (validation.errors.length > 0) {
-      phase.value = 'fhir-invalid'
-    } else if (parsedData.value?._missingFields?.length > 0) {
+    if (parsedData.value?._missingFields?.length > 0) {
       phase.value = 'parsed-partial'
     } else {
       phase.value = 'parsed'
@@ -290,18 +261,33 @@ function handleSystemChange(systemId) {
 }
 
 function handleParsedDataUpdate(nextData) {
-  parsedData.value = nextData
-
-  const patientResource = toFHIRPatient(parsedData.value)
-  const validation = validatePatientSoft(patientResource)
-  fhirErrors.value = validation.errors
-
-  if (validation.errors.length > 0) {
-    phase.value = 'fhir-invalid'
-  } else if (parsedData.value?._missingFields?.length > 0) {
+  const tracked = ['patient_first_name', 'patient_last_name', 'patient_state', 'patient_phone', 'patient_email']
+  const nextMissingFields = tracked.filter((key) => !String(nextData?.[key] || '').trim())
+  parsedData.value = {
+    ...nextData,
+    _missingFields: nextMissingFields
+  }
+  if (parsedData.value?._missingFields?.length > 0) {
     phase.value = 'parsed-partial'
   } else {
     phase.value = 'parsed'
+  }
+}
+
+function buildReferralPayload() {
+  return {
+    first_name: settings.value.clinicianFirstName || null,
+    last_name: settings.value.clinicianLastName || null,
+    email: settings.value.clinicianEmail || null,
+    npi_number: settings.value.npiNumber || null,
+    organization_name: settings.value.organizationName || null,
+    state: settings.value.organizationState || null,
+    patient_first_name: parsedData.value.patient_first_name || null,
+    patient_last_name: parsedData.value.patient_last_name || null,
+    patient_state: parsedData.value.patient_state || null,
+    patient_phone: parsedData.value.patient_phone || null,
+    patient_email: parsedData.value.patient_email || null,
+    source: 'extension_referral_widget'
   }
 }
 
@@ -312,15 +298,14 @@ async function doSend() {
   sendError.value = ''
 
   try {
-    const patient = toFHIRPatient(parsedData.value)
-    const bundle = buildBundle([patient])
+    const referralPayload = buildReferralPayload()
     const endpoint = settings.value.fhirEndpoint
     const authToken = settings.value.authToken
     const timeoutMs = Number(settings.value.requestTimeoutMs) || 15000
 
     const response = await chrome.runtime.sendMessage({
-      type: 'SEND_BUNDLE',
-      payload: { bundle, endpoint, token: authToken, timeoutMs }
+      type: 'SEND_REFERRAL',
+      payload: { referralPayload, endpoint, token: authToken, timeoutMs }
     })
 
     if (!response?.ok) {

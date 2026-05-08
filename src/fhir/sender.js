@@ -1,14 +1,6 @@
-import { validatePatient } from './validator.js'
-
-export async function sendBundle(bundle, endpoint, token, timeoutMs = 15000) {
+export async function sendReferral(referralPayload, endpoint, token, timeoutMs = 15000) {
   if (!endpoint) {
-    throw new Error('FHIR endpoint is not configured')
-  }
-
-  for (const entry of bundle.entry || []) {
-    if (entry?.resource?.resourceType === 'Patient') {
-      validatePatient(entry.resource)
-    }
+    throw new Error('Endpoint is not configured')
   }
 
   const controller = new AbortController()
@@ -19,16 +11,16 @@ export async function sendBundle(bundle, endpoint, token, timeoutMs = 15000) {
     response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/fhir+json',
+        'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : '',
-        Accept: 'application/fhir+json'
+        Accept: 'application/json'
       },
-      body: JSON.stringify(bundle),
+      body: JSON.stringify(referralPayload),
       signal: controller.signal
     })
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error(`FHIR request timeout after ${timeoutMs}ms`)
+      throw new Error(`Request timeout after ${timeoutMs}ms`)
     }
     throw error
   } finally {
@@ -37,8 +29,12 @@ export async function sendBundle(bundle, endpoint, token, timeoutMs = 15000) {
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`FHIR endpoint error ${response.status}: ${text}`)
+    throw new Error(`Endpoint error ${response.status}: ${text}`)
   }
 
-  return response.json()
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    return response.json()
+  }
+  return response.text()
 }

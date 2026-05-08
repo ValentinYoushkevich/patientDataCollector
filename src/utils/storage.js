@@ -3,7 +3,13 @@ const SEND_LOGS_KEY = 'sendLogs'
 const DEFAULTS = {
   fhirEndpoint: 'https://hapi.fhir.org/baseR4',
   authToken: '',
-  requestTimeoutMs: 15000
+  requestTimeoutMs: 15000,
+  clinicianFirstName: '',
+  clinicianLastName: '',
+  clinicianEmail: '',
+  npiNumber: '',
+  organizationName: '',
+  organizationState: ''
 }
 
 export async function getSettings() {

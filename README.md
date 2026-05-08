@@ -53,13 +53,6 @@ npx serve mock-site -p 3001
 - `http://localhost:3001/patient-partial.html` — частичные данные.
 - `http://localhost:3001/patient-invalid.html` — данные, не проходящие FHIR-валидацию.
 
-## Пример логина (stub)
-
-- Логин: `demo`
-- Пароль: `demo123`
-
-> Stub-авторизация используется только для прототипа.
-
 ## FHIR endpoint для тестов
 
 - [https://hapi.fhir.org/baseR4](https://hapi.fhir.org/baseR4)

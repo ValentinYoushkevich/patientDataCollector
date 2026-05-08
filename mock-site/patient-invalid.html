@@ -5,205 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SystemA - Invalid Patient</title>
     <style>
-      :root {
-        --bg: #e2e8f0;
-        --panel: #f8fafc;
-        --line: #94a3b8;
-        --text: #0f172a;
-        --bad: #b91c1c;
-        --bad-bg: #fee2e2;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-      }
-      .page { max-width: 1100px; margin: 20px auto; padding: 18px; }
-      .frame {
-        border: 1px solid var(--line);
-        background: #dce6ee;
-        border-radius: 10px;
-        overflow: hidden;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 18px;
-        background: #0f766e;
-        color: #ecfeff;
-      }
-      .header h1 { margin: 0; font-size: 24px; }
-      .badge {
-        background: var(--bad-bg);
-        color: var(--bad);
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 12px;
-      }
-      .toolbar {
-        padding: 12px 18px;
-        border-top: 1px solid #0b5f58;
-        background: #115e59;
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-      }
-      .toolbar a {
-        color: #dbeafe;
-        text-decoration: none;
-        font-weight: 700;
-      }
-      .toolbar a:hover { text-decoration: underline; }
-      .alert {
-        margin: 14px 18px 0;
-        border: 1px solid #fca5a5;
-        background: #fef2f2;
-        color: #7f1d1d;
-        padding: 10px 12px;
-      }
-      .alert strong { display: block; margin-bottom: 4px; }
-      .content { padding: 18px; display: grid; gap: 14px; }
-      .section { border: 1px solid var(--line); background: var(--panel); }
-      .section h2 {
-        margin: 0;
-        padding: 10px 12px;
-        font-size: 18px;
-        background: #cbd5e1;
-        border-bottom: 1px solid var(--line);
-      }
-      .grid {
-        padding: 12px;
-        display: grid;
-        gap: 10px 14px;
-      }
-      .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .field { display: flex; flex-direction: column; gap: 6px; }
-      .field .field-label {
-        font-size: 13px;
-        color: #475569;
-        font-weight: 700;
-      }
-      .value {
-        min-height: 34px;
-        border: 1px solid var(--line);
-        background: #fff;
-        padding: 8px 10px;
-      }
-      .invalid {
-        border-color: #f87171;
-        background: #fef2f2;
-        color: var(--bad);
-        font-weight: 700;
-      }
-      .span-2 { grid-column: span 2; }
-      .span-3 { grid-column: span 3; }
-      @media (max-width: 900px) {
-        .grid.cols-4,
-        .grid.cols-3,
-        .grid.cols-2 { grid-template-columns: 1fr 1fr; }
-      }
-      @media (max-width: 560px) {
-        .grid.cols-4,
-        .grid.cols-3,
-        .grid.cols-2 { grid-template-columns: 1fr; }
-        .span-2,
-        .span-3 { grid-column: span 1; }
-      }
+      body { font-family: Arial, sans-serif; margin: 24px; background: #f1f5f9; color: #0f172a; }
+      .card { max-width: 760px; border: 1px solid #cbd5e1; background: #fff; border-radius: 12px; overflow: hidden; }
+      .head { background: #7f1d1d; color: #fee2e2; padding: 14px 16px; display: flex; justify-content: space-between; }
+      .body { padding: 16px; }
+      .links { margin-bottom: 14px; display: flex; gap: 12px; }
+      .links a { color: #2563eb; text-decoration: none; font-weight: 700; }
+      .grid { display: grid; gap: 10px 12px; grid-template-columns: 160px 1fr; }
+      .label { font-weight: 700; color: #334155; }
+      .value { border: 1px solid #fca5a5; background: #fef2f2; padding: 8px 10px; min-height: 34px; color: #991b1b; }
     </style>
   </head>
   <body>
-    <main class="page">
-      <div class="frame">
-        <header class="header">
-          <h1>Patient Intake</h1>
-          <span class="badge">INVALID DATA</span>
-        </header>
-        <div class="toolbar">
+    <main class="card">
+      <div class="head">
+        <strong>Patient Intake (Invalid format demo)</strong>
+        <span>All 5 fields present but malformed</span>
+      </div>
+      <div class="body">
+        <div class="links">
           <a href="./patient-full.html">Open Full</a>
           <a href="./patient-partial.html">Open Partial</a>
         </div>
-
-        <div class="alert">
-          <strong>Validation warning</strong>
-          One or more required fields contain non-FHIR-compliant values.
-        </div>
-
-        <div class="content">
-          <section class="section">
-            <h2>Demographic & Contact Information</h2>
-            <div class="grid cols-4">
-              <div class="field">
-                <div class="field-label">MRN</div>
-                <div class="value" data-field="mrn">PAT-00789</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Last Name</div>
-                <div class="value" data-field="last-name">Johnson</div>
-              </div>
-              <div class="field">
-                <div class="field-label">First Name</div>
-                <div class="value" data-field="first-name">Robert</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Date of Birth</div>
-                <div class="value invalid" data-field="dob">15-03-1978</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Gender</div>
-                <div class="value invalid" data-field="gender">invalid-gender</div>
-              </div>
-              <div class="field span-2">
-                <div class="field-label">Primary Phone</div>
-                <div class="value" data-field="phone">+1 555-999-0001</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Language</div>
-                <div class="value invalid" data-field="language">English</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2>Address Information</h2>
-            <div class="grid cols-3">
-              <div class="field span-3">
-                <div class="field-label">Street Address</div>
-                <div class="value" data-field="address">456 Oak Ave</div>
-              </div>
-              <div class="field">
-                <div class="field-label">City</div>
-                <div class="value" data-field="city">Denver</div>
-              </div>
-              <div class="field">
-                <div class="field-label">State</div>
-                <div class="value" data-field="state">CO</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Postal Code</div>
-                <div class="value" data-field="zip">80201</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2>Communication Preferences</h2>
-            <div class="grid cols-2">
-              <div class="field">
-                <div class="field-label">Email</div>
-                <div class="value" data-field="email">robert.johnson@email.com</div>
-              </div>
-              <div class="field">
-                <div class="field-label">Preferred Contact Method</div>
-                <div class="value">Cell Phone</div>
-              </div>
-            </div>
-          </section>
+        <div class="grid">
+          <div class="label">First Name*</div>
+          <div class="value" data-field="first-name">***</div>
+          <div class="label">Last Name*</div>
+          <div class="value" data-field="last-name">12345</div>
+          <div class="label">State*</div>
+          <div class="value" data-field="state">??</div>
+          <div class="label">Phone Number*</div>
+          <div class="value" data-field="phone">invalid-number</div>
+          <div class="label">Email*</div>
+          <div class="value" data-field="email">not-an-email</div>
         </div>
       </div>
     </main>
