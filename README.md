@@ -1,110 +1,72 @@
-# FHIR Patient Data Collector
+# Referral Data Collector
 
-Chrome Extension (Manifest V3) для сбора данных пациента со страниц compliance-систем, преобразования в FHIR R4 и отправки на FHIR endpoint.
+Browser extension (Manifest V3) for Chrome/Edge that collects patient referral fields from EMR pages, allows manual completion, attaches saved provider data, and sends JSON to a configured endpoint.
 
-## Что делает расширение
+## Required patient fields
 
-- Авторизует пользовател.
-- Считывает данные пациента с открытой страницы поддерживаемой системы.
-- Преобразует raw-данные в `FHIR Patient`.
-- Формирует `FHIR Bundle` (`transaction`) и отправляет на настроенный endpoint.
-- Показывает двухфазный UX: `Parse -> Review -> Send`.
+- First Name
+- Last Name
+- State (2-letter code or full state name)
+- Phone Number (US format)
+- Email
 
-## Технологический стек
+## Required provider fields
 
-- `Vue 3` (Composition API) — UI popup.
-- `PrimeVue 4` + `@primevue/themes` (Aura/Lara) — компоненты интерфейса.
-- `Tailwind CSS v3` — layout и утилитарная стилизация.
-- `Vite` + `vite-plugin-web-extension` — сборка расширения.
-- `chrome.storage.local` — локальное хранение настроек/состояния.
-- `fetch` + background service worker — отправка данных на endpoint.
-- `fhir-tool` — валидация FHIR ресурсов перед отправкой.
+- Clinician first name
+- Clinician last name
+- Clinician email
+- NPI number
+- Organization name
+- Organization state
 
-## Быстрый старт
+## Main flow
 
-### 1) Установка зависимостей
+1. Parse patient data from the active EMR page (heuristic parser).
+2. Review parsed values and fill missing fields:
+   - direct edit in popup;
+   - field picker from page (crosshair mode).
+3. Verify provider settings are complete.
+4. Send referral JSON (`patient`, `clinician`, `organization`) to endpoint.
+5. See success/error status in popup.
+
+Send is blocked until all required fields are present and valid.
+
+## Quick start
 
 ```bash
 npm install
-```
-
-### 2) Режим разработки
-
-```bash
 npm run dev
 ```
 
-### 3) Подключение расширения в Chrome
+Build production package:
 
-1. Откройте `chrome://extensions`.
-2. Включите `Developer mode`.
-3. Нажмите `Load unpacked`.
-4. Выберите папку `dist`.
+```bash
+npm run build
+```
 
-## Запуск mock-site
+Load extension in browser:
+
+1. Open `chrome://extensions`
+2. Enable `Developer mode`
+3. Click `Load unpacked`
+4. Select `dist`
+
+## Mock site
+
+Run:
 
 ```bash
 npx serve mock-site -p 3001
 ```
 
-Примеры сценариев:
+Pages:
 
-- `http://localhost:3001/patient-full.html` — полный валидный набор полей.
-- `http://localhost:3001/patient-partial.html` — частичные данные.
-- `http://localhost:3001/patient-invalid.html` — данные, не проходящие FHIR-валидацию.
+- `http://localhost:3001/patient-full.html` — all required patient fields are filled.
+- `http://localhost:3001/patient-partial.html` — some required patient fields are intentionally empty.
+- `http://localhost:3001/patient-invalid.html` — required fields present but malformed.
 
-## FHIR endpoint для тестов
+## Notes
 
-- [https://hapi.fhir.org/baseR4](https://hapi.fhir.org/baseR4)
-- [https://r4.smarthealthit.org](https://r4.smarthealthit.org)
-
-Рекомендуется отправлять только тестовые/анонимизированные данные.
-
-## Добавление новой системы
-
-1. Создать парсер `src/parsers/systemD.js` (`parseSystemD(doc)`).
-2. Зарегистрировать его в `src/parsers/index.js`.
-3. Добавить опцию в `SelectSystem.vue`.
-4. Добавить URL-паттерн в `detectSystem(url)` (для auto-detect).
-
-Важно: новый парсер должен возвращать тот же контракт полей, что и `systemA`, чтобы `mapper.js` работал без дополнительных изменений.
-
-## Известные ограничения прототипа
-
-- Реальный OAuth отсутствует (используется заглушка).
-- Токен endpoint хранится статично.
-- Парсинг ориентирован на `data-field` селекторы.
-- Требуется доработка для SPA-навигации (MutationObserver и т.д.).
-- Нет отдельного security-hardening слоя для хранения чувствительных данных.
-- Нет валидации по профильным Implementation Guide (например, US Core/локальные IG), только базовая FHIR-проверка.
-- Нет идемпотентности отправки, возможны дубликаты ресурсов при повторной отправке.
-- Нет очереди/ретраев с backoff для временных сетевых ошибок и недоступности endpoint.
-- Нет offline-буферизации и безопасной отложенной отправки при восстановлении сети.
-- Нет контрактных/e2e тестов парсеров на эталонных HTML-снимках систем A/B/C.
-- Нет версионирования контрактов парсеров и раннего обнаружения поломок при изменении DOM источников.
-- Нет продвинутого маппинга и нормализации терминологий (identifier system governance, telecom/address semantics).
-- Нет явной политики обработки частично заполненных данных (правила block/warn по полям).
-- Нет структурированной наблюдаемости: метрик качества парсинга, причин отказов отправки и тех.трейсов.
-- Нет полноценного audit trail действий пользователя (кто/когда/куда отправил).
-- Нет политики retention и безопасной очистки локально сохраненных чувствительных данных.
-- Нет разделения конфигурации по окружениям (dev/stage/prod) для endpoint и параметров отправки.
-- Нет обработки rate-limit сценариев endpoint (например, 429) и адаптивного ограничения частоты запросов.
-
-## Документация в репозитории
-
-- Основной документ: `documentation/FHIR_ChromeExtension_Documentation.docx`
-- Планы этапов: `Documentation Plans/`
-
-## Локальный запуск для демонстрации (без режима разработки)
-
-У вас есть архив с папкой `dist`
-
-1. Подключите собранное расширение в Chrome:
-   - Откройте `chrome://extensions`
-   - Включите `Developer mode`
-   - Нажмите `Load unpacked`
-   - Выберите папку `dist`
-
-2. Откройте демонстрационный сайт и проверьте сценарии:
-   - Full patient: `https://valentinyoushkevich.github.io/patientDataCollector/patient-full.html`
-   - Partial patient: `https://valentinyoushkevich.github.io/patientDataCollector/patient-partial.html`
+- No retry queue is implemented.
+- No external NPI lookup/validation is implemented.
+- Data is stored only in browser local storage.

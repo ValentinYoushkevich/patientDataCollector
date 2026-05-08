@@ -1,6 +1,9 @@
-export async function sendReferral(referralPayload, endpoint, token, timeoutMs = 15000) {
+export async function sendReferral(referralPayload, endpoint, _token, timeoutMs = 15000) {
   if (!endpoint) {
     throw new Error('Endpoint is not configured')
+  }
+  if (!referralPayload?.patient || !referralPayload?.clinician || !referralPayload?.organization) {
+    throw new Error('Referral payload must include patient, clinician, and organization blocks')
   }
 
   const controller = new AbortController()
@@ -8,13 +11,13 @@ export async function sendReferral(referralPayload, endpoint, token, timeoutMs =
 
   let response
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
     response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-        Accept: 'application/json'
-      },
+      headers,
       body: JSON.stringify(referralPayload),
       signal: controller.signal
     })

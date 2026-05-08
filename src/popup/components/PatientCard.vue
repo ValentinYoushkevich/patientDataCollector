@@ -17,7 +17,16 @@
 
         <div class="min-w-0">
           <template v-if="editingKey === field.key">
-            <InputText v-model="draftValue" :placeholder="field.placeholder || ''" class="w-full" />
+            <Select
+              v-if="field.type === 'select'"
+              v-model="draftValue"
+              :options="field.options || []"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+              :placeholder="field.placeholder || 'Select state'"
+            />
+            <InputText v-else v-model="draftValue" :placeholder="field.placeholder || ''" class="w-full" />
             <div class="flex gap-2 mt-2">
               <Button label="Save" size="small" @click="saveEdit(field.key)" />
               <Button label="Cancel" size="small" severity="secondary" @click="cancelEdit" />
@@ -26,9 +35,23 @@
           </template>
           <template v-else>
             <div class="flex items-center gap-2 min-w-0">
-              <span class="block truncate leading-8 min-w-0 flex-1" :title="display(data[field.key])">
+              <span
+                class="block truncate leading-8 min-w-0 flex-1"
+                :class="{ 'text-red-700': isMissing(field.key) || isInvalid(field.key) }"
+                :title="display(data[field.key])"
+              >
                 {{ display(data[field.key]) }}
               </span>
+              <Button
+                icon="pi pi-search"
+                text
+                rounded
+                severity="secondary"
+                aria-label="Pick from page"
+                size="small"
+                class="w-7! h-7! min-w-7! p-0! shrink-0"
+                @click="pickField(field.key)"
+              />
               <Button
                 icon="pi pi-pencil"
                 text
@@ -42,11 +65,6 @@
             </div>
           </template>
         </div>
-      </div>
-
-      <div class="grid grid-cols-[110px,minmax(0,1fr)] gap-2 items-center">
-        <span class="font-medium">System:</span>
-        <span class="truncate" :title="display(data._system)">{{ display(data._system) }}</span>
       </div>
     </div>
     <div v-if="data._missingFields?.length" class="mt-2 rounded bg-amber-50 border border-amber-200 p-2">
@@ -63,16 +81,22 @@
 <script setup>
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import { computed, ref } from 'vue'
+import { US_STATE_OPTIONS } from '../../referral/schema.js'
 
 const props = defineProps({
   data: {
     type: Object,
     required: true
+  },
+  invalidFields: {
+    type: Array,
+    default: () => []
   }
 })
 
-const emit = defineEmits(['update:data'])
+const emit = defineEmits(['update:data', 'pick:field'])
 const editingKey = ref('')
 const draftValue = ref('')
 const editError = ref('')
@@ -80,7 +104,12 @@ const editError = ref('')
 const editableFields = computed(() => [
   { key: 'patient_first_name', label: 'First Name', type: 'text' },
   { key: 'patient_last_name', label: 'Last Name', type: 'text' },
-  { key: 'patient_state', label: 'State', type: 'text' },
+  {
+    key: 'patient_state',
+    label: 'State',
+    type: 'select',
+    options: US_STATE_OPTIONS.map((state) => ({ label: state, value: state }))
+  },
   { key: 'patient_phone', label: 'Phone Number', type: 'text' },
   { key: 'patient_email', label: 'Email', type: 'text' }
 ])
@@ -126,6 +155,18 @@ function validateField(key, value) {
   }
 
   return ''
+}
+
+function isMissing(key) {
+  return Array.isArray(props.data?._missingFields) && props.data._missingFields.includes(key)
+}
+
+function isInvalid(key) {
+  return Array.isArray(props.invalidFields) && props.invalidFields.includes(key)
+}
+
+function pickField(key) {
+  emit('pick:field', key)
 }
 
 </script>

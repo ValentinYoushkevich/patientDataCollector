@@ -1,9 +1,9 @@
 const SETTINGS_KEY = 'settings'
 const SEND_LOGS_KEY = 'sendLogs'
+const DEFAULT_ENDPOINT = 'https://api.treatmyocd.com/v1/external_provider_referrals'
+const LEGACY_ENDPOINT = 'https://hapi.fhir.org/baseR4'
 const DEFAULTS = {
-  fhirEndpoint: 'https://hapi.fhir.org/baseR4',
-  authToken: '',
-  requestTimeoutMs: 15000,
+  referralEndpoint: DEFAULT_ENDPOINT,
   clinicianFirstName: '',
   clinicianLastName: '',
   clinicianEmail: '',
@@ -14,15 +14,24 @@ const DEFAULTS = {
 
 export async function getSettings() {
   const { [SETTINGS_KEY]: settings } = await chrome.storage.local.get(SETTINGS_KEY)
-  return settings ? { ...DEFAULTS, ...settings } : { ...DEFAULTS }
+  if (!settings) return { ...DEFAULTS }
+  const storedEndpoint = settings.referralEndpoint || settings.fhirEndpoint || ''
+  const migratedEndpoint = !storedEndpoint || storedEndpoint === LEGACY_ENDPOINT
+    ? DEFAULT_ENDPOINT
+    : storedEndpoint
+
+  return {
+    ...DEFAULTS,
+    ...settings,
+    referralEndpoint: migratedEndpoint
+  }
 }
 
 export async function saveSettings(partial) {
   const current = await getSettings()
   const next = {
     ...current,
-    ...partial,
-    requestTimeoutMs: Number(partial?.requestTimeoutMs ?? current.requestTimeoutMs)
+    ...partial
   }
   await chrome.storage.local.set({ [SETTINGS_KEY]: next })
   return next

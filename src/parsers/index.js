@@ -1,20 +1,11 @@
-import { parseSystemA } from './systemA.js'
-import { parseSystemB } from './systemB.js'
-import { parseSystemC } from './systemC.js'
-
-const PARSERS = {
-  systemA: parseSystemA,
-  systemB: parseSystemB,
-  systemC: parseSystemC
-}
+import { parseUniversalPatient } from './universal.js'
 
 export function parsePatient(systemId, doc) {
-  const parser = PARSERS[systemId]
-  if (!parser) {
-    throw new Error(`Unknown system: ${systemId}`)
+  const data = parseUniversalPatient(doc)
+  return {
+    ...data,
+    _system: systemId || 'universal'
   }
-
-  return parser(doc)
 }
 
 export function detectSystem(url) {
