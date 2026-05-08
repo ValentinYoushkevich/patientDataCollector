@@ -10,13 +10,15 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_popup": "popup/index.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "side_panel": {
+    "default_path": "popup/index.html"
   },
   "background": {
     "service_worker": "src/background/service-worker.js",
@@ -25,13 +27,8 @@
   "content_scripts": [
     {
       "matches": [
-        "http://localhost/*",
-        "http://127.0.0.1/*",
-        "http://127.0.0.1:5500/*",
-        "https://mock-compliance.example.com/*",
-        "https://*.systemA.com/*",
-        "https://*.systemB.com/*",
-        "https://*.systemC.com/*"
+        "http://*/*",
+        "https://*/*"
       ],
       "js": [
         "src/content/index.js"
@@ -42,16 +39,11 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "sidePanel"
   ],
   "host_permissions": [
-    "http://localhost/*",
-    "http://127.0.0.1/*",
-    "http://127.0.0.1:5500/*",
-    "https://mock-compliance.example.com/*",
-    "https://*.systemA.com/*",
-    "https://*.systemB.com/*",
-    "https://*.systemC.com/*",
-    "https://fhir-endpoint.example.com/*"
+    "http://*/*",
+    "https://*/*"
   ]
 }

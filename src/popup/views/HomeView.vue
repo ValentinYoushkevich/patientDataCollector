@@ -70,8 +70,10 @@
         <PatientCard
           :data="parsedData"
           :invalidFields="patientIssues.invalid"
+          :pickerActiveFieldKey="pickerActiveFieldKey"
           @update:data="handleParsedDataUpdate"
           @pick:field="pickFieldFromPage"
+          @pick:cancel="cancelPickerMode"
         />
         <div class="flex flex-col gap-2 mt-3">
           <Button
@@ -242,6 +244,7 @@ const sendError = ref('')
 const pickError = ref('')
 const sendLogs = ref([])
 const uiScreen = ref('main')
+const pickerActiveFieldKey = ref('')
 const sendResultAnchor = ref(null)
 const debugLastRequest = ref('')
 const debugLastResponse = ref('')
@@ -333,7 +336,7 @@ async function collectFromTab(systemId) {
         response = await chrome.tabs.sendMessage(tab.id, payload)
       } catch {
         throw new Error(
-          'Failed to attach content script. Open a supported page (localhost / systemA/systemB/systemC) and refresh the tab.'
+          'Failed to attach content script. Refresh the active page and try again.'
         )
       }
     } else {
@@ -461,9 +464,6 @@ async function doSend() {
     })
 
     phase.value = 'sent'
-    const responsePreview = typeof response.result === 'string'
-      ? response.result.slice(0, 48)
-      : response.result?.id || response.result?.status || 'ok'
     await nextTick()
     sendResultAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   } catch (err) {
@@ -507,9 +507,11 @@ function isProviderFieldMissing(key) {
 
 async function pickFieldFromPage(fieldKey) {
   pickError.value = ''
+  pickerActiveFieldKey.value = fieldKey
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   if (!tab?.id) {
     pickError.value = 'Active tab was not found.'
+    pickerActiveFieldKey.value = ''
     return
   }
   try {
@@ -524,9 +526,24 @@ async function pickFieldFromPage(fieldKey) {
       ...parsedData.value,
       [fieldKey]: String(response.value || '').trim()
     })
+    pickerActiveFieldKey.value = ''
   } catch (error) {
     pickError.value = error?.message || 'Field picker failed'
+    pickerActiveFieldKey.value = ''
   }
+}
+
+async function cancelPickerMode() {
+  pickError.value = ''
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (tab?.id) {
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: 'PICK_FIELD_CANCEL' })
+    } catch {
+      // Ignore if content script is not attached.
+    }
+  }
+  pickerActiveFieldKey.value = ''
 }
 
 onMounted(async () => {

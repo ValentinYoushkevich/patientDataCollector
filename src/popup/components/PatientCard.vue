@@ -43,14 +43,14 @@
                 {{ display(data[field.key]) }}
               </span>
               <Button
-                icon="pi pi-search"
+                :icon="isPickerActiveForField(field.key) ? 'pi pi-times' : 'pi pi-search'"
                 text
                 rounded
                 severity="secondary"
-                aria-label="Pick from page"
+                :aria-label="isPickerActiveForField(field.key) ? 'Disable picker mode' : 'Pick from page'"
                 size="small"
                 class="w-7! h-7! min-w-7! p-0! shrink-0"
-                @click="pickField(field.key)"
+                @click="isPickerActiveForField(field.key) ? cancelPick() : pickField(field.key)"
               />
               <Button
                 icon="pi pi-pencil"
@@ -93,10 +93,14 @@ const props = defineProps({
   invalidFields: {
     type: Array,
     default: () => []
+  },
+  pickerActiveFieldKey: {
+    type: String,
+    default: ''
   }
 })
 
-const emit = defineEmits(['update:data', 'pick:field'])
+const emit = defineEmits(['update:data', 'pick:field', 'pick:cancel'])
 const editingKey = ref('')
 const draftValue = ref('')
 const editError = ref('')
@@ -167,6 +171,14 @@ function isInvalid(key) {
 
 function pickField(key) {
   emit('pick:field', key)
+}
+
+function cancelPick() {
+  emit('pick:cancel')
+}
+
+function isPickerActiveForField(key) {
+  return String(props.pickerActiveFieldKey || '') === String(key)
 }
 
 </script>
